@@ -302,7 +302,6 @@ body {
   "use strict";
 
   var N = 6, BR = 2, BC = 3, TOTAL = 200, KEY = "minisudoku.v1";
-  var ID_RE = /^[A-Za-z0-9_\-.~:@+]{1,200}$/;
   var TIERS = [
     { from: 1, to: 50, name: "Sleepy Hamster Meadow" },
     { from: 51, to: 120, name: "Suspicious Owl Forest" },
@@ -324,18 +323,11 @@ body {
   ];
   var FIXED_LINE = "That digit is printed in ink. Pick a blank square.";
   var SELECT_LINE = "Tap a square first, then pick a number.";
-  var SYNC_ERR = {
-    invalid_argument: "Your access here can't post to the leaderboard. Progress is still saved on this device.",
-    resource_exhausted: "The leaderboard is catching its breath. Your score will post after your next win.",
-    quota_exceeded: "The leaderboard is full right now. Progress is still saved on this device.",
-    revoked: "Leaderboard access was turned off for this visit. Progress is still saved on this device.",
-    not_granted: "The leaderboard needs a signed-in view of this page. Progress is still saved on this device."
-  };
   var BOARD_ERR = {
-    not_granted: "The leaderboard needs a signed-in view of this page. Your own progress still saves in this browser.",
-    capability_disabled: "The leaderboard is not available in this view. Your own progress still saves in this browser.",
-    revoked: "Leaderboard access was turned off for this visit.",
-    resource_exhausted: "Too many requests right now. Reload the page to try again."
+    not_configured: "The leaderboard needs a Redis database connected in Vercel. Your progress still saves in this browser.",
+    session_required: "Please allow cookies and reload the page to post your score. Your progress is saved on this device.",
+    invalid_score: "Your score could not be accepted. Your progress is saved on this device.",
+    storage_unavailable: "The leaderboard could not connect. Try opening Legends again in a bit."
   };
 
   function $(sel) { return document.querySelector(sel); }
@@ -511,6 +503,9 @@ body {
     show(name);
     if (name === "home") renderHome();
     if (name === "levels") renderLevels();
+    if (name === "board") refreshBoard().then(function (connected) {
+      if (connected) queueScore();
+    });
   }
 
   /* ---------- home ---------- */
@@ -769,8 +764,8 @@ body {
     setNameMsg("Fresh start. What's your name, puzzler?");
   });
 
-  /* ---------- shared leaderboard (db capability) ---------- */
-  var dbNS = null, myId = null, unsubBoard = null, scoreChain = Promise.resolve();
+  /* ---------- shared leaderboard (Vercel API) ---------- */
+  var myId = null, boardRequest = null, scoreChain = Promise.resolve();
 
   function setSync(msg) {
     $("#sync-note").textContent = msg;
@@ -787,7 +782,7 @@ body {
       ? "Top " + docs.length + " puzzlers, ranked by the highest level cleared."
       : "Nobody has cleared a level yet. Be the first legend.";
     docs.forEach(function (d, idx) {
-      var data = d.data() || {};
+      var data = d;
       var mine = !!myId && d.id === myId;
       var name = el("span", "nm", typeof data.name === "string" && data.name ? data.name : "Mystery puzzler");
       if (mine) name.appendChild(el("span", "you", "you"));
@@ -798,43 +793,53 @@ body {
       list.appendChild(li);
     });
   }
-  function subscribeBoard() {
-    if (unsubBoard || !dbNS) return;
-    try {
-      unsubBoard = dbNS.collection("players")
-        .where("cleared", ">", 0)
-        .orderBy("cleared", "desc")
-        .limit(100)
-        .onSnapshot(
-          function (snap) { renderRows(snap.docs); },
-          function (err) {
-            renderBoardOffline(BOARD_ERR[err && err.code] || "The leaderboard is taking a nap. Try again in a bit.");
-          }
-        );
-    } catch (err) {
-      renderBoardOffline("The leaderboard could not connect. Try again later.");
-    }
+  function boardError(err) {
+    return BOARD_ERR[err && err.code] || "Couldn't reach the leaderboard. Progress is saved on this device. Open Legends to try again.";
   }
-  // Each signed-in viewer writes only players/<their id>. Everyone reads the top list.
-  function postScore() {
-    if (!profile) return;
-    if (!dbNS) { setSync("Progress saved on this device. The leaderboard is not connected in this view."); return; }
-    if (!myId) { setSync("Progress saved on this device. Open this page signed in to join the leaderboard."); return; }
-    function attempt(n) {
-      var payload = { name: profile.name, cleared: profile.cleared, updatedAt: Date.now() };
-      return Promise.resolve()
-        .then(function () { return dbNS.doc("players/" + myId).set(payload); })
-        .then(function () { setSync("Leaderboard updated. Level " + payload.cleared + " is on the board."); })
-        .catch(function (err) {
-          var code = err && err.code;
-          if (code === "unavailable" && n < 2) {
-            return new Promise(function (res) { setTimeout(res, 900 + Math.random() * 600); })
-              .then(function () { return attempt(n + 1); });
-          }
-          setSync(SYNC_ERR[code] || "Couldn't reach the leaderboard. Progress is saved on this device.");
-        });
+  async function boardApi(method, payload) {
+    var response = await fetch("/api/leaderboard", {
+      method: method,
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: payload ? { "Content-Type": "application/json" } : {},
+      body: payload ? JSON.stringify(payload) : undefined,
+      signal: AbortSignal.timeout(12000)
+    });
+    var data = await response.json();
+    if (!response.ok) {
+      var error = new Error("Leaderboard HTTP " + response.status);
+      error.code = data.error;
+      throw error;
     }
-    return attempt(1);
+    return data;
+  }
+  function refreshBoard() {
+    if (boardRequest) return boardRequest;
+    boardRequest = boardApi("GET").then(function (data) {
+      myId = data.playerId;
+      renderRows(data.players);
+      return true;
+    }).catch(function (err) {
+      renderBoardOffline(boardError(err));
+      setSync(boardError(err));
+      return false;
+    }).finally(function () { boardRequest = null; });
+    return boardRequest;
+  }
+  // The API identifies players with a signed, HTTP-only cookie.
+  function postScore() {
+    if (!profile || !profile.cleared) return Promise.resolve();
+    var payload = { name: profile.name, cleared: profile.cleared };
+    return (myId ? Promise.resolve(true) : refreshBoard()).then(function (connected) {
+      if (!connected) return;
+      return boardApi("POST", payload)
+        .then(function (data) {
+          setSync("Leaderboard updated. Level " + data.player.cleared + " is on the board.");
+          return refreshBoard();
+        }).catch(function (err) {
+          setSync(boardError(err));
+        });
+    });
   }
   // Writes are chained so only one save is ever in flight.
   function queueScore() {
@@ -842,39 +847,16 @@ body {
   }
 
   /* ---------- boot ---------- */
-  function useCap(name) {
-    try {
-      var c = window.claude;
-      return c && typeof c.use === "function" ? c.use(name) : null;
-    } catch (e) { return null; }
-  }
   function boot() {
     show("home");
     renderHero();
     renderHome();
     renderBoardOffline("Connecting to the leaderboard...");
     setSync("");
-    Promise.all([
-      Promise.resolve(useCap("db")).catch(function () { return null; }),
-      Promise.resolve(useCap("user")).catch(function () { return null; })
-    ]).then(function (res) {
-      dbNS = res[0] || null;
-      var user = res[1];
-      if (!user) return;
-      return Promise.resolve()
-        .then(function () { return user.id(); })
-        .then(function (id) { myId = typeof id === "string" && ID_RE.test(id) ? id : null; })
-        .catch(function () { myId = null; });
-    }).then(function () {
-      if (!dbNS) {
-        renderBoardOffline(BOARD_ERR.not_granted);
-        setSync("Progress saves in this browser. The leaderboard is not connected in this view.");
-        return;
-      }
-      subscribeBoard();
-      setSync(myId
-        ? "Leaderboard connected. Your best level posts when you clear one."
-        : "Progress saves in this browser. Open this page signed in to join the leaderboard.");
+    refreshBoard().then(function (connected) {
+      if (!connected) return;
+      setSync("Leaderboard connected. Your best level posts when you clear one.");
+      queueScore();
     });
   }
   boot();
