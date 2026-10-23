@@ -1,5 +1,5 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Mini Sudoku Sillyville</title>
+<!doctype html><html lang="vi"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Hiếu Sudoku</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;700;800;900&display=swap">
@@ -192,45 +192,45 @@ body {
   <header>
     <div class="hero">
       <div>
-        <p class="kicker">Tiny grid. Big drama. 200 levels.</p>
-        <h1 class="brand">Mini Sudoku Sillyville</h1>
+        <p class="kicker">Ô số nhỏ. Thử thách lớn. 200 màn chơi.</p>
+        <h1 class="brand">Hiếu Sudoku</h1>
       </div>
       <div id="hero-board" class="hero-board" aria-hidden="true"></div>
     </div>
-    <nav class="nav" aria-label="Main">
-      <button class="pill" type="button" data-go="home">Home</button>
-      <button class="pill" type="button" data-go="levels">Levels</button>
-      <button class="pill" type="button" data-go="board">Legends</button>
+    <nav class="nav" aria-label="Điều hướng chính">
+      <button class="pill" type="button" data-go="home">Trang chủ</button>
+      <button class="pill" type="button" data-go="levels">Màn chơi</button>
+      <button class="pill" type="button" data-go="board">Bảng xếp hạng</button>
     </nav>
   </header>
 
   <main>
     <section id="s-home" class="screen">
       <div class="card" id="name-card">
-        <h2 class="card-title">Who goes there, puzzler?</h2>
-        <p class="muted">Type a name the hamsters can shout. Progress saves in this browser, so you can pick up where you left off.</p>
+        <h2 class="card-title">Chào bạn, cao thủ giải đố!</h2>
+        <p class="muted">Nhập tên để bắt đầu nhé! Tiến trình được lưu trong trình duyệt này để bạn có thể chơi tiếp bất cứ lúc nào.</p>
         <form id="name-form" class="name-form" autocomplete="off">
-          <label for="name-input" class="sr">Your name</label>
-          <input id="name-input" name="name" maxlength="16" placeholder="Sir Digits-a-Lot" required>
-          <button class="btn" type="submit">Enter Sillyville</button>
+          <label for="name-input" class="sr">Tên của bạn</label>
+          <input id="name-input" name="name" maxlength="16" placeholder="Cao thủ ô số" required>
+          <button class="btn" type="submit">Bắt đầu chơi</button>
         </form>
         <p id="name-msg" class="msg" role="status"></p>
         <ul class="rules">
-          <li>Every row gets 1 through 6, once each.</li>
-          <li>Every column gets 1 through 6, once each.</li>
-          <li>Every thick-walled 2 by 3 box gets 1 through 6, once each.</li>
-          <li>Yelling at the screen is allowed but does not help.</li>
+          <li>Mỗi hàng có đủ các số từ 1 đến 6, không lặp lại.</li>
+          <li>Mỗi cột có đủ các số từ 1 đến 6, không lặp lại.</li>
+          <li>Mỗi vùng 2 × 3 ô có viền đậm có đủ các số từ 1 đến 6, không lặp lại.</li>
+          <li>Bình tĩnh suy luận, các con số không chạy đi đâu cả!</li>
         </ul>
       </div>
 
       <div class="card" id="welcome-card" hidden>
-        <h2 class="card-title" id="welcome-title">Welcome back!</h2>
+        <h2 class="card-title" id="welcome-title">Chào mừng bạn trở lại!</h2>
         <p class="muted" id="welcome-line"></p>
         <div class="row-btns">
-          <button class="btn" id="continue-btn" type="button">Continue</button>
-          <button class="btn ghost" id="levels-btn" type="button">Pick a level</button>
+          <button class="btn" id="continue-btn" type="button">Chơi tiếp</button>
+          <button class="btn ghost" id="levels-btn" type="button">Chọn màn chơi</button>
         </div>
-        <button class="link" id="forget-btn" type="button">Forget me on this device</button>
+        <button class="link" id="forget-btn" type="button">Xóa tiến trình trên thiết bị này</button>
       </div>
 
       <div class="card">
@@ -240,9 +240,9 @@ body {
 
     <section id="s-levels" class="screen" hidden>
       <div class="head-row">
-        <h2 class="card-title">Pick your nightmare</h2>
+        <h2 class="card-title">Chọn thử thách của bạn</h2>
         <p class="muted" id="levels-progress"></p>
-        <p class="muted">Cleared levels glow mint. Yellow is up next. Faded ones are locked.</p>
+        <p class="muted">Màu xanh là màn đã vượt qua. Màu vàng là màn tiếp theo. Màn bị khóa có màu nhạt.</p>
         <p class="msg" id="levels-note" role="status"></p>
       </div>
       <div id="levels"></div>
@@ -250,26 +250,26 @@ body {
 
     <section id="s-game" class="screen" hidden>
       <div class="game-head">
-        <button class="pill" type="button" data-go="levels">Levels</button>
+        <button class="pill" type="button" data-go="levels">Màn chơi</button>
         <div class="game-title">
           <span class="muted" id="tier-name"></span>
-          <strong id="level-name">Level 1</strong>
+          <strong id="level-name">Màn 1</strong>
         </div>
       </div>
       <div class="stats">
-        <span>Mistakes <b id="stat-mistakes">0</b></span>
-        <span>Time <b id="stat-time">00:00</b></span>
+        <span>Số lỗi <b id="stat-mistakes">0</b></span>
+        <span>Thời gian <b id="stat-time">00:00</b></span>
       </div>
       <div class="board-wrap">
-        <div id="board" class="board" role="grid" aria-label="Sudoku board"></div>
+        <div id="board" class="board" role="grid" aria-label="Bảng Sudoku"></div>
         <div id="win" class="overlay" hidden>
           <div class="card" role="dialog" aria-modal="true" aria-labelledby="win-title">
             <h2 id="win-title" class="card-title"></h2>
             <p class="muted" id="win-text"></p>
             <p class="muted" id="win-sync"></p>
             <div class="row-btns">
-              <button class="btn" id="next-btn" type="button" data-level="2">Next level</button>
-              <button class="btn ghost" type="button" data-go="levels">Levels</button>
+              <button class="btn" id="next-btn" type="button" data-level="2">Màn tiếp theo</button>
+              <button class="btn ghost" type="button" data-go="levels">Màn chơi</button>
             </div>
           </div>
         </div>
@@ -282,15 +282,15 @@ body {
         <button type="button" data-n="4">4</button>
         <button type="button" data-n="5">5</button>
         <button type="button" data-n="6">6</button>
-        <button type="button" data-n="0" class="erase">Erase</button>
+        <button type="button" data-n="0" class="erase">Xóa</button>
       </div>
-      <p class="muted hint">Keyboard works too: 1 to 6 to fill, 0 or Backspace to clear, arrow keys to move.</p>
+      <p class="muted hint">Bạn cũng có thể dùng bàn phím: phím 1 đến 6 để điền số, 0 hoặc Backspace để xóa, các phím mũi tên để di chuyển.</p>
     </section>
 
     <section id="s-board" class="screen" hidden>
       <div class="head-row">
-        <h2 class="card-title">Hall of Brainy Legends</h2>
-        <p class="muted" id="board-status">Connecting to the leaderboard...</p>
+        <h2 class="card-title">Bảng vàng cao thủ Sudoku</h2>
+        <p class="muted" id="board-status">Đang kết nối bảng xếp hạng...</p>
       </div>
       <ol id="board-list" class="board-list"></ol>
     </section>
@@ -303,31 +303,31 @@ body {
 
   var N = 6, BR = 2, BC = 3, TOTAL = 200, KEY = "minisudoku.v1";
   var TIERS = [
-    { from: 1, to: 50, name: "Sleepy Hamster Meadow" },
-    { from: 51, to: 120, name: "Suspicious Owl Forest" },
-    { from: 121, to: 200, name: "Unhinged Raccoon Dimension" }
+    { from: 1, to: 50, name: "Đồng cỏ chuột hamster ngái ngủ" },
+    { from: 51, to: 120, name: "Khu rừng cú mèo tinh quái" },
+    { from: 121, to: 200, name: "Vương quốc gấu mèo siêu quậy" }
   ];
   var WIN_LINES = [
-    "Boom. The numbers respect you now.",
-    "The grid bowed. Bow back.",
-    "Crisis averted. The hamsters are safe.",
-    "Your brain just did a cartwheel.",
-    "Unhinged, but correct. The best kind.",
-    "Nobody saw that coming. Except you."
+    "Tuyệt vời! Các con số đã chịu thua bạn.",
+    "Bảng số xin bái phục cao thủ!",
+    "Thử thách đã qua. Đàn hamster an toàn rồi!",
+    "Bộ não của bạn vừa có một màn nhào lộn!",
+    "Cách giải thật bá đạo, mà vẫn chính xác!",
+    "Không ai ngờ bạn làm được. Trừ chính bạn!"
   ];
   var WRONG_LINES = [
-    "Nope. That number is not invited.",
-    "The grid has feelings about that one.",
-    "Wrong, but with great confidence.",
-    "Close in spirit. Wrong in math."
+    "Chưa đúng rồi. Số này không thuộc về ô đó.",
+    "Bảng số có vẻ không đồng ý. Thử lại nhé!",
+    "Rất tự tin, nhưng chưa chính xác!",
+    "Gần đúng rồi, thử suy luận thêm nhé!"
   ];
-  var FIXED_LINE = "That digit is printed in ink. Pick a blank square.";
-  var SELECT_LINE = "Tap a square first, then pick a number.";
+  var FIXED_LINE = "Số này có sẵn, không thể thay đổi. Hãy chọn một ô trống.";
+  var SELECT_LINE = "Hãy chọn một ô trước, rồi chọn số để điền.";
   var BOARD_ERR = {
-    not_configured: "The leaderboard needs a Redis database connected in Vercel. Your progress still saves in this browser.",
-    session_required: "Please allow cookies and reload the page to post your score. Your progress is saved on this device.",
-    invalid_score: "Your score could not be accepted. Your progress is saved on this device.",
-    storage_unavailable: "The leaderboard could not connect. Try opening Legends again in a bit."
+    not_configured: "Cần kết nối cơ sở dữ liệu Redis trong Vercel để dùng bảng xếp hạng. Tiến trình vẫn được lưu trong trình duyệt này.",
+    session_required: "Vui lòng cho phép cookie và tải lại trang để gửi thành tích. Tiến trình đã được lưu trên thiết bị này.",
+    invalid_score: "Không thể ghi nhận thành tích của bạn. Tiến trình đã được lưu trên thiết bị này.",
+    storage_unavailable: "Không thể kết nối bảng xếp hạng. Hãy mở lại Bảng xếp hạng sau ít phút."
   };
 
   function $(sel) { return document.querySelector(sel); }
@@ -496,7 +496,7 @@ body {
   function goto(name) {
     if (name === "levels" && !profile) {
       goto("home");
-      setNameMsg("Enter a name first. The levels stay shy until you do.", true);
+      setNameMsg("Bạn hãy nhập tên trước để mở các màn chơi nhé!", true);
       return;
     }
     if (game) leaveGame();
@@ -514,15 +514,15 @@ body {
     $("#name-card").hidden = has;
     $("#welcome-card").hidden = !has;
     if (!has) return;
-    $("#welcome-title").textContent = "Welcome back, " + profile.name + "!";
+    $("#welcome-title").textContent = "Chào mừng " + profile.name + " trở lại!";
     var line;
-    if (profile.cleared >= TOTAL) line = "All 200 levels are done. The hamsters are still terrified of you.";
-    else if (profile.cleared === 0) line = "Level 1 is waiting. It has been practicing.";
-    else line = "You have cleared " + profile.cleared + " of " + TOTAL + ". Keep going, you absolute menace.";
+    if (profile.cleared >= TOTAL) line = "Bạn đã chinh phục cả 200 màn chơi. Đúng là cao thủ Sudoku!";
+    else if (profile.cleared === 0) line = "Màn 1 đang chờ bạn. Sẵn sàng thử sức nào!";
+    else line = "Bạn đã vượt qua " + profile.cleared + "/" + TOTAL + " màn. Tiếp tục phát huy nhé!";
     $("#welcome-line").textContent = line;
     var cont = $("#continue-btn");
     cont.hidden = profile.cleared >= TOTAL;
-    cont.textContent = "Continue Level " + resumeTarget();
+    cont.textContent = "Chơi tiếp màn " + resumeTarget();
   }
   function renderHero() {
     var base = ["123456", "456123", "231564", "564231", "312645", "645312"];
@@ -539,16 +539,16 @@ body {
     var wrap = $("#levels");
     wrap.textContent = "";
     var cleared = profile ? profile.cleared : 0;
-    $("#levels-progress").textContent = cleared + " of " + TOTAL + " cleared." + (cleared >= TOTAL ? " Legend status achieved." : "");
+    $("#levels-progress").textContent = "Đã vượt qua " + cleared + "/" + TOTAL + " màn." + (cleared >= TOTAL ? " Bạn đã trở thành huyền thoại!" : "");
     TIERS.forEach(function (t) {
-      wrap.appendChild(el("h3", "tier-title", t.name + " · levels " + t.from + " to " + t.to));
+      wrap.appendChild(el("h3", "tier-title", t.name + " · màn " + t.from + " đến " + t.to));
       var grid = el("div", "lvl-grid");
       for (var n = t.from; n <= t.to; n++) {
         var state = n <= cleared ? "done" : (n === cleared + 1 ? "next" : "locked");
         var b = el("button", "lvl " + state, String(n));
         b.type = "button";
         b.dataset.level = String(n);
-        b.setAttribute("aria-label", "Level " + n + (state === "done" ? ", cleared" : state === "next" ? ", next up" : ", locked"));
+        b.setAttribute("aria-label", "Màn " + n + (state === "done" ? ", đã vượt qua" : state === "next" ? ", tiếp theo" : ", bị khóa"));
         grid.appendChild(b);
       }
       wrap.appendChild(grid);
@@ -591,7 +591,7 @@ body {
       if (r % BR === BR - 1 && r < N - 1) cls.push("bx-b");
       cells[i].className = cls.join(" ");
       cells[i].textContent = v ? String(v) : "";
-      cells[i].setAttribute("aria-label", "Row " + (r + 1) + ", column " + (c + 1) + (v ? ", " + v : ", empty") + (given ? ", given" : ""));
+      cells[i].setAttribute("aria-label", "Hàng " + (r + 1) + ", cột " + (c + 1) + (v ? ", số " + v : ", ô trống") + (given ? ", số có sẵn" : ""));
     }
     $("#stat-mistakes").textContent = String(game.mistakes);
     $("#stat-time").textContent = fmt(game.elapsed);
@@ -613,7 +613,7 @@ body {
     profile.last = level;
     saveProfile();
     buildBoard();
-    $("#level-name").textContent = "Level " + level;
+    $("#level-name").textContent = "Màn " + level;
     $("#tier-name").textContent = tierOf(level).name;
     $("#win").hidden = true;
     note("");
@@ -682,8 +682,8 @@ body {
     renderGame();
     $("#win-title").textContent = pick(WIN_LINES, lvl);
     $("#win-text").textContent = lvl >= TOTAL
-      ? "All 200 levels cleared. " + profile.name + " is officially a menace to bad puzzles."
-      : "Level " + lvl + " cleared in " + fmt(game.elapsed) + " with " + game.mistakes + (game.mistakes === 1 ? " mistake." : " mistakes.");
+      ? "Đã vượt qua cả 200 màn. " + profile.name + " chính thức trở thành cao thủ Sudoku!"
+      : "Bạn đã vượt qua màn " + lvl + " trong " + fmt(game.elapsed) + " với " + game.mistakes + " lỗi.";
     $("#win-sync").textContent = "";
     var nextBtn = $("#next-btn");
     nextBtn.hidden = lvl >= TOTAL;
@@ -720,7 +720,7 @@ body {
     var n = +b.dataset.level;
     if (!profile) { goto("home"); return; }
     if (n > profile.cleared + 1) {
-      $("#levels-note").textContent = "Level " + n + " is locked. Clear level " + (profile.cleared + 1) + " first. No shortcuts, puzzler.";
+      $("#levels-note").textContent = "Màn " + n + " đang bị khóa. Hãy vượt qua màn " + (profile.cleared + 1) + " trước nhé!";
       return;
     }
     openLevel(n);
@@ -734,7 +734,7 @@ body {
   $("#name-form").addEventListener("submit", function (e) {
     e.preventDefault();
     var raw = $("#name-input").value.replace(/\s+/g, " ").trim();
-    if (!raw) { setNameMsg("Your name can't be empty. Even hamsters have names.", true); return; }
+    if (!raw) { setNameMsg("Tên không được để trống. Bạn hãy nhập tên nhé!", true); return; }
     profile = { name: raw.slice(0, 16), cleared: 0, last: 0, progress: {} };
     saveProfile();
     $("#name-input").value = "";
@@ -746,11 +746,11 @@ body {
     var btn = this;
     if (btn.dataset.armed !== "1") {
       btn.dataset.armed = "1";
-      btn.textContent = "Tap again to erase my progress";
+      btn.textContent = "Nhấn lần nữa để xác nhận xóa tiến trình";
       clearTimeout(forgetTimer);
       forgetTimer = setTimeout(function () {
         btn.dataset.armed = "0";
-        btn.textContent = "Forget me on this device";
+        btn.textContent = "Xóa tiến trình trên thiết bị này";
       }, 4000);
       return;
     }
@@ -759,9 +759,9 @@ body {
     stopTimer();
     game = null;
     btn.dataset.armed = "0";
-    btn.textContent = "Forget me on this device";
+    btn.textContent = "Xóa tiến trình trên thiết bị này";
     renderHome();
-    setNameMsg("Fresh start. What's your name, puzzler?");
+    setNameMsg("Bắt đầu lại từ đầu nhé! Bạn tên là gì?");
   });
 
   /* ---------- shared leaderboard (Vercel API) ---------- */
@@ -779,22 +779,22 @@ body {
     var list = $("#board-list");
     list.textContent = "";
     $("#board-status").textContent = docs.length
-      ? "Top " + docs.length + " puzzlers, ranked by the highest level cleared."
-      : "Nobody has cleared a level yet. Be the first legend.";
+      ? docs.length + " cao thủ dẫn đầu, xếp theo màn cao nhất đã vượt qua."
+      : "Chưa có ai vượt qua màn chơi nào. Hãy là cao thủ đầu tiên!";
     docs.forEach(function (d, idx) {
       var data = d;
       var mine = !!myId && d.id === myId;
-      var name = el("span", "nm", typeof data.name === "string" && data.name ? data.name : "Mystery puzzler");
-      if (mine) name.appendChild(el("span", "you", "you"));
+      var name = el("span", "nm", typeof data.name === "string" && data.name ? data.name : "Người chơi bí ẩn");
+      if (mine) name.appendChild(el("span", "you", "bạn"));
       var li = el("li", "row" + (mine ? " me" : ""));
       li.appendChild(el("span", "rank", "#" + (idx + 1)));
       li.appendChild(name);
-      li.appendChild(el("span", "lv", "Level " + (+data.cleared || 0)));
+      li.appendChild(el("span", "lv", "Màn " + (+data.cleared || 0)));
       list.appendChild(li);
     });
   }
   function boardError(err) {
-    return BOARD_ERR[err && err.code] || "Couldn't reach the leaderboard. Progress is saved on this device. Open Legends to try again.";
+    return BOARD_ERR[err && err.code] || "Không thể kết nối bảng xếp hạng. Tiến trình đã được lưu trên thiết bị này. Hãy mở lại Bảng xếp hạng để thử lại.";
   }
   async function boardApi(method, payload) {
     var response = await fetch("/api/leaderboard", {
@@ -834,7 +834,7 @@ body {
       if (!connected) return;
       return boardApi("POST", payload)
         .then(function (data) {
-          setSync("Leaderboard updated. Level " + data.player.cleared + " is on the board.");
+          setSync("Đã cập nhật bảng xếp hạng. Thành tích của bạn là màn " + data.player.cleared + ".");
           return refreshBoard();
         }).catch(function (err) {
           setSync(boardError(err));
@@ -851,11 +851,11 @@ body {
     show("home");
     renderHero();
     renderHome();
-    renderBoardOffline("Connecting to the leaderboard...");
+    renderBoardOffline("Đang kết nối bảng xếp hạng...");
     setSync("");
     refreshBoard().then(function (connected) {
       if (!connected) return;
-      setSync("Leaderboard connected. Your best level posts when you clear one.");
+      setSync("Đã kết nối bảng xếp hạng. Thành tích tốt nhất sẽ được cập nhật khi bạn vượt qua một màn.");
       queueScore();
     });
   }

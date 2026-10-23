@@ -1,6 +1,6 @@
-# Mini Sudoku Sillyville
+# Hiếu Sudoku
 
-A single-page 6x6 sudoku with 200 levels. Progress saves in each browser.
+A Vietnamese-language single-page 6x6 sudoku with 200 levels. Progress saves in each browser. The page title and game brand are **Hiếu Sudoku**; navigation, gameplay messages and accessibility labels use Vietnamese.
 
 ## Project layout
 
@@ -51,15 +51,15 @@ The original leaderboard depended on Claude's artifact database (`window.claude`
 2. Connect the database to this project and enable the environment(s) you deploy to (Production and, if needed, Preview).
 3. Check **Settings > Environment Variables** for `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`. Use the **read-write REST token**, not a read-only token. The API also supports `KV_REST_API_URL` and `KV_REST_API_TOKEN` if the integration creates those names instead.
 4. **Redeploy** after connecting the database or changing variables. Existing deployments do not receive new variables automatically.
-5. Open the game, clear a level, and visit **Legends**. Returning players' locally saved cleared levels also sync when the page loads.
+5. Open the game, clear a level, and visit **Bảng xếp hạng**. Returning players' locally saved cleared levels also sync when the page loads.
 
-Keep tokens server-side; never put them in `index.html` or commit `.env.local`. If the database is missing or unavailable, Legends shows an explicit connection message instead of pretending the leaderboard is empty. Gameplay and local progress continue to work.
+Keep tokens server-side; never put them in `index.html` or commit `.env.local`. If the database is missing or unavailable, **Bảng xếp hạng** shows an explicit connection message instead of pretending the leaderboard is empty. Gameplay and local progress continue to work.
 
 ### Behavior and limits
 
 - Rankings contain the top 100 players with at least one cleared level, ordered by highest cleared level. Equal scores use Redis's reverse ID ordering.
-- Rankings refresh on page load, when opening Legends, and after posting a score; they are not a live subscription.
-- A signed, HTTP-only cookie identifies a browser. Names need not be unique. Different browsers/devices are separate players; clearing cookies creates a new identity. "Forget me on this device" resets local progress only, not the shared best score.
+- Rankings refresh on page load, when opening **Bảng xếp hạng**, and after posting a score; they are not a live subscription.
+- A signed, HTTP-only cookie identifies a browser. Names need not be unique. Different browsers/devices are separate players; clearing cookies creates a new identity. "Xóa tiến trình trên thiết bị này" resets local progress only, not the shared best score.
 - Score updates are atomic and never lower a player's best level. Rotating the Redis token invalidates existing player cookies.
 - Existing Claude-hosted leaderboard entries are not migrated. Browser progress is origin-specific, so a new Vercel domain does not automatically inherit progress from another domain.
 - This is a casual leaderboard: scores originate in the browser, not server-verified puzzle completions. It is not suitable for prizes or competitive anti-cheat guarantees.
