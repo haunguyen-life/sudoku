@@ -1,0 +1,881 @@
+<title>Mini Sudoku Sillyville</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+/* Layout: one centered column; board and number pad share one width.
+   Palette: butter paper, cobalt ink, sunny yellow and mint accents.
+   Type: Bagel Fat One for the brand, Nunito for everything else. */
+:root {
+  color-scheme: light;
+  --bg: #FFF6E3; --ink: #1B1A3A; --muted: #5B5880; --card: #FFFFFF;
+  --accent: #2D4BFF; --accent-ink: #FFFFFF;
+  --sun: #FFD23F; --on-sun: #1B1A3A;
+  --mint: #1FC79A; --on-mint: #06241B;
+  --rose: #E8345E;
+  --rule: #1B1A3A; --hair: #E4DDF4;
+  --sel: #FFE58A; --rel: #E7EAFF; --same: #D6F5EA;
+  --given: #1B1A3A; --filled: #2D4BFF;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #111331; --ink: #F4F2FF; --muted: #B3AED8; --card: #1B1E4A;
+    --accent: #8FA2FF; --accent-ink: #0F1130;
+    --sun: #FFD23F; --on-sun: #1B1A3A;
+    --mint: #3EE0B0; --on-mint: #06241B;
+    --rose: #FF7A95;
+    --rule: #9C98D6; --hair: #2E3272;
+    --sel: #5B4C12; --rel: #262B63; --same: #174B45;
+    --given: #F4F2FF; --filled: #8FA2FF;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111331; --ink: #F4F2FF; --muted: #B3AED8; --card: #1B1E4A;
+  --accent: #8FA2FF; --accent-ink: #0F1130;
+  --sun: #FFD23F; --on-sun: #1B1A3A;
+  --mint: #3EE0B0; --on-mint: #06241B;
+  --rose: #FF7A95;
+  --rule: #9C98D6; --hair: #2E3272;
+  --sel: #5B4C12; --rel: #262B63; --same: #174B45;
+  --given: #F4F2FF; --filled: #8FA2FF;
+}
+body {
+  margin: 0;
+  background: var(--bg); color: var(--ink);
+  font-family: Nunito, "Arial Rounded MT Bold", system-ui, sans-serif;
+  font-weight: 700; font-size: 16px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+*, *::before, *::after { box-sizing: border-box; }
+.app { max-width: 460px; margin: 0 auto; padding-block: 16px 32px; display: grid; gap: 16px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* Header */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.kicker { margin: 0; font-weight: 800; color: var(--muted); font-size: 14px; letter-spacing: .02em; }
+.brand {
+  margin: 4px 0 0;
+  font-family: "Bagel Fat One", "Arial Rounded MT Bold", system-ui, sans-serif;
+  font-weight: 400; font-size: clamp(34px, 11vw, 48px); line-height: .98;
+  color: var(--accent); text-wrap: balance; text-shadow: 0 3px 0 var(--sun);
+}
+.hero-board {
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
+  width: 124px; aspect-ratio: 1;
+  border: 3px solid var(--rule); border-radius: 10px; overflow: hidden;
+  background: var(--card); transform: rotate(-4deg); justify-self: end;
+}
+.hc { display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color: var(--ink); box-shadow: inset -1px -1px 0 var(--hair); }
+.hc.blank { background: var(--rel); }
+.nav { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Controls */
+.pill {
+  font: inherit; font-weight: 800; font-size: 14px; color: var(--ink);
+  background: var(--card); border: 2px solid var(--rule); border-radius: 999px;
+  padding: 6px 14px; min-height: 40px; cursor: pointer;
+}
+.pill[aria-current="page"] { background: var(--sun); color: var(--on-sun); }
+.btn {
+  font: inherit; font-weight: 900; font-size: 16px; color: var(--accent-ink);
+  background: var(--accent); border: 0; border-radius: 14px;
+  padding: 12px 18px; min-height: 48px; cursor: pointer; box-shadow: 0 4px 0 var(--rule);
+}
+.btn:active { transform: translateY(3px); box-shadow: none; }
+.btn.ghost { background: var(--card); color: var(--ink); border: 2px solid var(--rule); }
+.link {
+  font: inherit; font-weight: 800; font-size: 14px; color: var(--muted);
+  background: none; border: 0; padding: 8px 0; min-height: 44px; cursor: pointer; text-decoration: underline; justify-self: start;
+}
+:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+
+/* Screens and cards */
+.screen { display: grid; gap: 16px; min-width: 0; }
+.card {
+  background: var(--card); border: 3px solid var(--rule); border-radius: 22px;
+  padding: 18px; display: grid; gap: 12px; min-width: 0;
+}
+.card-title { margin: 0; font-size: 22px; font-weight: 900; line-height: 1.2; text-wrap: balance; }
+.muted { margin: 0; color: var(--muted); font-weight: 700; }
+.row-btns { display: flex; flex-wrap: wrap; gap: 10px; }
+.rules { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--muted); font-weight: 700; }
+.name-form { display: grid; gap: 10px; }
+.name-form input {
+  font: inherit; font-weight: 800; font-size: 18px; color: var(--ink);
+  background: var(--bg); border: 3px solid var(--rule); border-radius: 14px;
+  padding: 12px 14px; width: 100%; min-width: 0; min-height: 48px;
+}
+.msg { margin: 0; min-height: 1.4em; color: var(--muted); font-weight: 800; }
+.msg.err { color: var(--rose); }
+.head-row { display: grid; gap: 6px; }
+
+/* Levels */
+.tier-title { margin: 12px 0 0; font-size: 16px; font-weight: 900; }
+.lvl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 8px; margin-top: 8px; }
+.lvl {
+  aspect-ratio: 1; min-width: 0; padding: 0; cursor: pointer;
+  border: 2px solid var(--rule); border-radius: 12px; background: var(--card); color: var(--ink);
+  font: inherit; font-weight: 900; font-size: 15px;
+}
+.lvl.done { background: var(--mint); color: var(--on-mint); }
+.lvl.next { background: var(--sun); color: var(--on-sun); }
+.lvl.locked { opacity: .45; }
+
+/* Game */
+.game-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.game-title { display: grid; text-align: right; min-width: 0; }
+.game-title strong { font-size: 20px; font-weight: 900; }
+.stats { display: flex; justify-content: space-between; gap: 10px; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; }
+.stats b { color: var(--ink); }
+.board-wrap { position: relative; width: min(100%, 360px); margin: 0 auto; }
+.board {
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); aspect-ratio: 1;
+  border: 4px solid var(--rule); border-radius: 14px; overflow: hidden; background: var(--card);
+}
+.cell {
+  appearance: none; margin: 0; padding: 0; min-width: 0; border: 0; border-radius: 0;
+  background: var(--card); color: var(--ink); font: inherit; font-weight: 800;
+  font-size: clamp(20px, 6.4vw, 28px); font-variant-numeric: tabular-nums;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  box-shadow: inset -1px -1px 0 var(--hair);
+}
+.cell.bx-r { box-shadow: inset -3px -1px 0 var(--rule); }
+.cell.bx-b { box-shadow: inset -1px -3px 0 var(--rule); }
+.cell.bx-r.bx-b { box-shadow: inset -3px -3px 0 var(--rule); }
+.cell.rel { background: var(--rel); }
+.cell.same { background: var(--same); }
+.cell.sel { background: var(--sel); }
+.cell.given { color: var(--given); font-weight: 900; }
+.cell.filled { color: var(--filled); }
+.cell.wrong { color: var(--rose); }
+.cell:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; z-index: 1; }
+.overlay {
+  position: absolute; inset: 0; display: grid; place-items: center; padding: 14px;
+  background: rgba(12, 12, 36, .55); border-radius: 14px;
+}
+.overlay .card { width: 100%; max-width: 300px; }
+.pad { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; width: min(100%, 360px); margin: 0 auto; }
+.pad button {
+  font: inherit; font-weight: 900; font-size: 20px; color: var(--ink);
+  background: var(--card); border: 2px solid var(--rule); border-radius: 12px;
+  aspect-ratio: 1; padding: 0; min-width: 0; cursor: pointer;
+}
+.pad button.erase { font-size: 13px; font-weight: 800; color: var(--muted); }
+.note { margin: 0; min-height: 1.4em; font-weight: 800; color: var(--rose); text-align: center; }
+.hint { font-size: 13px; text-align: center; }
+
+/* Leaderboard */
+.board-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.row {
+  display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  background: var(--card); border: 2px solid var(--rule); border-radius: 14px; padding: 10px 14px; min-width: 0;
+}
+.row.me { background: var(--rel); border-color: var(--accent); }
+.rank { font-weight: 900; font-size: 18px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.nm { font-weight: 900; overflow-wrap: anywhere; min-width: 0; }
+.you {
+  display: inline-block; margin-left: 6px; padding: 0 8px; border-radius: 999px;
+  font-size: 12px; font-weight: 900; background: var(--accent); color: var(--accent-ink); vertical-align: middle;
+}
+.lv { font-weight: 900; font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+</style>
+
+<div class="app">
+  <header>
+    <div class="hero">
+      <div>
+        <p class="kicker">Tiny grid. Big drama. 200 levels.</p>
+        <h1 class="brand">Mini Sudoku Sillyville</h1>
+      </div>
+      <div id="hero-board" class="hero-board" aria-hidden="true"></div>
+    </div>
+    <nav class="nav" aria-label="Main">
+      <button class="pill" type="button" data-go="home">Home</button>
+      <button class="pill" type="button" data-go="levels">Levels</button>
+      <button class="pill" type="button" data-go="board">Legends</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="s-home" class="screen">
+      <div class="card" id="name-card">
+        <h2 class="card-title">Who goes there, puzzler?</h2>
+        <p class="muted">Type a name the hamsters can shout. Progress saves in this browser, so you can pick up where you left off.</p>
+        <form id="name-form" class="name-form" autocomplete="off">
+          <label for="name-input" class="sr">Your name</label>
+          <input id="name-input" name="name" maxlength="16" placeholder="Sir Digits-a-Lot" required>
+          <button class="btn" type="submit">Enter Sillyville</button>
+        </form>
+        <p id="name-msg" class="msg" role="status"></p>
+        <ul class="rules">
+          <li>Every row gets 1 through 6, once each.</li>
+          <li>Every column gets 1 through 6, once each.</li>
+          <li>Every thick-walled 2 by 3 box gets 1 through 6, once each.</li>
+          <li>Yelling at the screen is allowed but does not help.</li>
+        </ul>
+      </div>
+
+      <div class="card" id="welcome-card" hidden>
+        <h2 class="card-title" id="welcome-title">Welcome back!</h2>
+        <p class="muted" id="welcome-line"></p>
+        <div class="row-btns">
+          <button class="btn" id="continue-btn" type="button">Continue</button>
+          <button class="btn ghost" id="levels-btn" type="button">Pick a level</button>
+        </div>
+        <button class="link" id="forget-btn" type="button">Forget me on this device</button>
+      </div>
+
+      <div class="card">
+        <p class="muted" id="sync-note" role="status"></p>
+      </div>
+    </section>
+
+    <section id="s-levels" class="screen" hidden>
+      <div class="head-row">
+        <h2 class="card-title">Pick your nightmare</h2>
+        <p class="muted" id="levels-progress"></p>
+        <p class="muted">Cleared levels glow mint. Yellow is up next. Faded ones are locked.</p>
+        <p class="msg" id="levels-note" role="status"></p>
+      </div>
+      <div id="levels"></div>
+    </section>
+
+    <section id="s-game" class="screen" hidden>
+      <div class="game-head">
+        <button class="pill" type="button" data-go="levels">Levels</button>
+        <div class="game-title">
+          <span class="muted" id="tier-name"></span>
+          <strong id="level-name">Level 1</strong>
+        </div>
+      </div>
+      <div class="stats">
+        <span>Mistakes <b id="stat-mistakes">0</b></span>
+        <span>Time <b id="stat-time">00:00</b></span>
+      </div>
+      <div class="board-wrap">
+        <div id="board" class="board" role="grid" aria-label="Sudoku board"></div>
+        <div id="win" class="overlay" hidden>
+          <div class="card" role="dialog" aria-modal="true" aria-labelledby="win-title">
+            <h2 id="win-title" class="card-title"></h2>
+            <p class="muted" id="win-text"></p>
+            <p class="muted" id="win-sync"></p>
+            <div class="row-btns">
+              <button class="btn" id="next-btn" type="button" data-level="2">Next level</button>
+              <button class="btn ghost" type="button" data-go="levels">Levels</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="note" id="game-note" role="status"></p>
+      <div class="pad" id="pad">
+        <button type="button" data-n="1">1</button>
+        <button type="button" data-n="2">2</button>
+        <button type="button" data-n="3">3</button>
+        <button type="button" data-n="4">4</button>
+        <button type="button" data-n="5">5</button>
+        <button type="button" data-n="6">6</button>
+        <button type="button" data-n="0" class="erase">Erase</button>
+      </div>
+      <p class="muted hint">Keyboard works too: 1 to 6 to fill, 0 or Backspace to clear, arrow keys to move.</p>
+    </section>
+
+    <section id="s-board" class="screen" hidden>
+      <div class="head-row">
+        <h2 class="card-title">Hall of Brainy Legends</h2>
+        <p class="muted" id="board-status">Connecting to the leaderboard...</p>
+      </div>
+      <ol id="board-list" class="board-list"></ol>
+    </section>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var N = 6, BR = 2, BC = 3, TOTAL = 200, KEY = "minisudoku.v1";
+  var ID_RE = /^[A-Za-z0-9_\-.~:@+]{1,200}$/;
+  var TIERS = [
+    { from: 1, to: 50, name: "Sleepy Hamster Meadow" },
+    { from: 51, to: 120, name: "Suspicious Owl Forest" },
+    { from: 121, to: 200, name: "Unhinged Raccoon Dimension" }
+  ];
+  var WIN_LINES = [
+    "Boom. The numbers respect you now.",
+    "The grid bowed. Bow back.",
+    "Crisis averted. The hamsters are safe.",
+    "Your brain just did a cartwheel.",
+    "Unhinged, but correct. The best kind.",
+    "Nobody saw that coming. Except you."
+  ];
+  var WRONG_LINES = [
+    "Nope. That number is not invited.",
+    "The grid has feelings about that one.",
+    "Wrong, but with great confidence.",
+    "Close in spirit. Wrong in math."
+  ];
+  var FIXED_LINE = "That digit is printed in ink. Pick a blank square.";
+  var SELECT_LINE = "Tap a square first, then pick a number.";
+  var SYNC_ERR = {
+    invalid_argument: "Your access here can't post to the leaderboard. Progress is still saved on this device.",
+    resource_exhausted: "The leaderboard is catching its breath. Your score will post after your next win.",
+    quota_exceeded: "The leaderboard is full right now. Progress is still saved on this device.",
+    revoked: "Leaderboard access was turned off for this visit. Progress is still saved on this device.",
+    not_granted: "The leaderboard needs a signed-in view of this page. Progress is still saved on this device."
+  };
+  var BOARD_ERR = {
+    not_granted: "The leaderboard needs a signed-in view of this page. Your own progress still saves in this browser.",
+    capability_disabled: "The leaderboard is not available in this view. Your own progress still saves in this browser.",
+    revoked: "Leaderboard access was turned off for this visit.",
+    resource_exhausted: "Too many requests right now. Reload the page to try again."
+  };
+
+  function $(sel) { return document.querySelector(sel); }
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function pick(list, seed) { return list[Math.abs(seed | 0) % list.length]; }
+  function fmt(s) {
+    var m = Math.floor(s / 60), r = s % 60;
+    return (m < 10 ? "0" : "") + m + ":" + (r < 10 ? "0" : "") + r;
+  }
+  function clampInt(v, lo, hi) { v = Math.floor(+v) || 0; return Math.max(lo, Math.min(hi, v)); }
+  function tierOf(level) {
+    for (var i = 0; i < TIERS.length; i++) if (level >= TIERS[i].from && level <= TIERS[i].to) return TIERS[i];
+    return TIERS[TIERS.length - 1];
+  }
+  function boxOf(i) {
+    var r = Math.floor(i / N), c = i % N;
+    return Math.floor(r / BR) * (N / BC) + Math.floor(c / BC);
+  }
+
+  /* ---------- deterministic puzzle generation (same level => same puzzle for everyone) ---------- */
+  function rng(seed) {
+    var a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) | 0;
+      var t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function shuffled(arr, rnd) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(rnd() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  // Values allowed at cell i given the other filled cells in its row, column and box.
+  function candidates(g, i) {
+    var r = Math.floor(i / N), c = i % N;
+    var used = new Array(N + 1).fill(false);
+    for (var k = 0; k < N; k++) { used[g[r * N + k]] = true; used[g[k * N + c]] = true; }
+    var br = Math.floor(r / BR) * BR, bc = Math.floor(c / BC) * BC;
+    for (var y = 0; y < BR; y++) for (var x = 0; x < BC; x++) used[g[(br + y) * N + bc + x]] = true;
+    var out = [];
+    for (var v = 1; v <= N; v++) if (!used[v]) out.push(v);
+    return out;
+  }
+  // Counts solutions up to `limit`. Mutates g but restores it.
+  function countSolutions(g, limit) {
+    var count = 0;
+    (function search() {
+      var pick = -1, best = null;
+      for (var i = 0; i < N * N; i++) {
+        if (g[i] !== 0) continue;
+        var cs = candidates(g, i);
+        if (cs.length === 0) return;
+        if (best === null || cs.length < best.length) {
+          pick = i; best = cs;
+          if (cs.length === 1) break;
+        }
+      }
+      if (pick === -1) { count++; return; }
+      for (var k = 0; k < best.length; k++) {
+        g[pick] = best[k];
+        search();
+        g[pick] = 0;
+        if (count >= limit) return;
+      }
+    })();
+    return count;
+  }
+  function generateSolution(rnd) {
+    var g = new Array(N * N).fill(0);
+    (function fill(i) {
+      if (i === N * N) return true;
+      var cs = shuffled(candidates(g, i), rnd);
+      for (var k = 0; k < cs.length; k++) {
+        g[i] = cs[k];
+        if (fill(i + 1)) return true;
+      }
+      g[i] = 0;
+      return false;
+    })(0);
+    return g;
+  }
+  function makePuzzle(level) {
+    var rnd = rng(level * 9973 + 17);
+    var solution = generateSolution(rnd);
+    var puzzle = solution.slice();
+    var target = Math.max(10, 24 - Math.floor((level - 1) / 10));
+    var givens = N * N;
+    var order = shuffled(Array.apply(null, Array(N * N)).map(function (_, k) { return k; }), rnd);
+    for (var k = 0; k < order.length; k++) {
+      if (givens <= target) break;
+      var i = order[k];
+      var keep = puzzle[i];
+      puzzle[i] = 0;
+      if (countSolutions(puzzle.slice(), 2) === 1) givens--;
+      else puzzle[i] = keep;
+    }
+    return { puzzle: puzzle, solution: solution };
+  }
+  var puzzleCache = {};
+  function getPuzzle(level) {
+    if (!puzzleCache[level]) puzzleCache[level] = makePuzzle(level);
+    return puzzleCache[level];
+  }
+
+  /* ---------- per-browser progress ---------- */
+  function loadProfile() {
+    try {
+      var p = JSON.parse(localStorage.getItem(KEY));
+      if (!p || typeof p.name !== "string" || !p.name) return null;
+      var progress = {};
+      if (p.progress && typeof p.progress === "object") {
+        Object.keys(p.progress).forEach(function (k) {
+          var lv = +k, e = p.progress[k];
+          if (lv >= 1 && lv <= TOTAL && e && Array.isArray(e.grid) && e.grid.length === N * N) {
+            progress[lv] = {
+              grid: e.grid.map(function (v) { v = v | 0; return v >= 0 && v <= N ? v : 0; }),
+              mistakes: clampInt(e.mistakes, 0, 9999),
+              elapsed: clampInt(e.elapsed, 0, 999999)
+            };
+          }
+        });
+      }
+      return {
+        name: p.name.slice(0, 16),
+        cleared: clampInt(p.cleared, 0, TOTAL),
+        last: clampInt(p.last, 0, TOTAL),
+        progress: progress
+      };
+    } catch (e) { return null; }
+  }
+  var profile = loadProfile();
+  function saveProfile() {
+    try { localStorage.setItem(KEY, JSON.stringify(profile)); } catch (e) {}
+  }
+  function resumeTarget() {
+    var next = Math.min(profile.cleared + 1, TOTAL);
+    return profile.last > profile.cleared && profile.last <= TOTAL ? profile.last : next;
+  }
+
+  /* ---------- screens ---------- */
+  var SCREENS = ["home", "levels", "game", "board"];
+  function show(name) {
+    SCREENS.forEach(function (s) { $("#s-" + s).hidden = s !== name; });
+    document.querySelectorAll(".pill[data-go]").forEach(function (p) {
+      if (p.dataset.go === name) p.setAttribute("aria-current", "page");
+      else p.removeAttribute("aria-current");
+    });
+    window.scrollTo(0, 0);
+  }
+  function setNameMsg(msg, err) {
+    var m = $("#name-msg");
+    m.textContent = msg;
+    m.classList.toggle("err", !!err);
+  }
+  function goto(name) {
+    if (name === "levels" && !profile) {
+      goto("home");
+      setNameMsg("Enter a name first. The levels stay shy until you do.", true);
+      return;
+    }
+    if (game) leaveGame();
+    show(name);
+    if (name === "home") renderHome();
+    if (name === "levels") renderLevels();
+  }
+
+  /* ---------- home ---------- */
+  function renderHome() {
+    var has = !!profile;
+    $("#name-card").hidden = has;
+    $("#welcome-card").hidden = !has;
+    if (!has) return;
+    $("#welcome-title").textContent = "Welcome back, " + profile.name + "!";
+    var line;
+    if (profile.cleared >= TOTAL) line = "All 200 levels are done. The hamsters are still terrified of you.";
+    else if (profile.cleared === 0) line = "Level 1 is waiting. It has been practicing.";
+    else line = "You have cleared " + profile.cleared + " of " + TOTAL + ". Keep going, you absolute menace.";
+    $("#welcome-line").textContent = line;
+    var cont = $("#continue-btn");
+    cont.hidden = profile.cleared >= TOTAL;
+    cont.textContent = "Continue Level " + resumeTarget();
+  }
+  function renderHero() {
+    var base = ["123456", "456123", "231564", "564231", "312645", "645312"];
+    var host = $("#hero-board");
+    host.textContent = "";
+    for (var r = 0; r < N; r++) for (var c = 0; c < N; c++) {
+      var blank = (r * 5 + c * 7) % 4 === 0;
+      host.appendChild(el("span", "hc" + (blank ? " blank" : ""), blank ? "" : base[r].charAt(c)));
+    }
+  }
+
+  /* ---------- levels map ---------- */
+  function renderLevels() {
+    var wrap = $("#levels");
+    wrap.textContent = "";
+    var cleared = profile ? profile.cleared : 0;
+    $("#levels-progress").textContent = cleared + " of " + TOTAL + " cleared." + (cleared >= TOTAL ? " Legend status achieved." : "");
+    TIERS.forEach(function (t) {
+      wrap.appendChild(el("h3", "tier-title", t.name + " · levels " + t.from + " to " + t.to));
+      var grid = el("div", "lvl-grid");
+      for (var n = t.from; n <= t.to; n++) {
+        var state = n <= cleared ? "done" : (n === cleared + 1 ? "next" : "locked");
+        var b = el("button", "lvl " + state, String(n));
+        b.type = "button";
+        b.dataset.level = String(n);
+        b.setAttribute("aria-label", "Level " + n + (state === "done" ? ", cleared" : state === "next" ? ", next up" : ", locked"));
+        grid.appendChild(b);
+      }
+      wrap.appendChild(grid);
+    });
+  }
+
+  /* ---------- game ---------- */
+  var game = null, timerId = null, tickCount = 0, cells = [];
+
+  function buildBoard() {
+    var board = $("#board");
+    board.textContent = "";
+    cells = [];
+    for (var i = 0; i < N * N; i++) {
+      var b = el("button", "cell", "");
+      b.type = "button";
+      b.dataset.i = String(i);
+      board.appendChild(b);
+      cells.push(b);
+    }
+  }
+  function renderGame() {
+    if (!game) return;
+    var sel = game.sel;
+    var selR = sel >= 0 ? Math.floor(sel / N) : -1, selC = sel >= 0 ? sel % N : -1;
+    var selBox = sel >= 0 ? boxOf(sel) : -1;
+    var selVal = sel >= 0 ? game.grid[sel] : 0;
+    for (var i = 0; i < N * N; i++) {
+      var r = Math.floor(i / N), c = i % N, v = game.grid[i];
+      var given = game.puzzle[i] !== 0;
+      var wrong = !given && v !== 0 && v !== game.solution[i];
+      var cls = ["cell"];
+      if (given) cls.push("given");
+      else if (v && !wrong) cls.push("filled");
+      if (wrong) cls.push("wrong");
+      if (i === sel) cls.push("sel");
+      else if (sel >= 0 && (r === selR || c === selC || boxOf(i) === selBox)) cls.push("rel");
+      if (selVal && v === selVal && i !== sel) cls.push("same");
+      if (c % BC === BC - 1 && c < N - 1) cls.push("bx-r");
+      if (r % BR === BR - 1 && r < N - 1) cls.push("bx-b");
+      cells[i].className = cls.join(" ");
+      cells[i].textContent = v ? String(v) : "";
+      cells[i].setAttribute("aria-label", "Row " + (r + 1) + ", column " + (c + 1) + (v ? ", " + v : ", empty") + (given ? ", given" : ""));
+    }
+    $("#stat-mistakes").textContent = String(game.mistakes);
+    $("#stat-time").textContent = fmt(game.elapsed);
+  }
+  function note(msg) { $("#game-note").textContent = msg; }
+
+  function openLevel(level) {
+    if (!profile || level < 1 || level > TOTAL) return;
+    var pz = getPuzzle(level);
+    var saved = profile.progress[level];
+    var grid = saved ? saved.grid.slice() : pz.puzzle.slice();
+    for (var i = 0; i < N * N; i++) if (pz.puzzle[i] !== 0) grid[i] = pz.puzzle[i];
+    game = {
+      level: level, puzzle: pz.puzzle, solution: pz.solution, grid: grid,
+      mistakes: saved ? saved.mistakes : 0,
+      elapsed: saved ? saved.elapsed : 0,
+      sel: -1, done: false
+    };
+    profile.last = level;
+    saveProfile();
+    buildBoard();
+    $("#level-name").textContent = "Level " + level;
+    $("#tier-name").textContent = tierOf(level).name;
+    $("#win").hidden = true;
+    note("");
+    renderGame();
+    show("game");
+    startTimer();
+  }
+  function persistGame() {
+    if (!game || game.done || !profile) return;
+    profile.progress[game.level] = { grid: game.grid.slice(), mistakes: game.mistakes, elapsed: game.elapsed };
+    saveProfile();
+  }
+  function leaveGame() {
+    persistGame();
+    stopTimer();
+    game = null;
+  }
+  function startTimer() { stopTimer(); timerId = setInterval(tick, 1000); }
+  function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
+  function tick() {
+    if (!game || game.done) return;
+    game.elapsed++;
+    $("#stat-time").textContent = fmt(game.elapsed);
+    if (++tickCount % 10 === 0) persistGame();
+  }
+  function isSolved() {
+    for (var i = 0; i < N * N; i++) if (game.grid[i] !== game.solution[i]) return false;
+    return true;
+  }
+  function enter(v) {
+    if (!game || game.done) return;
+    if (game.sel < 0) { note(SELECT_LINE); return; }
+    var i = game.sel;
+    if (game.puzzle[i] !== 0) { note(FIXED_LINE); return; }
+    if (game.grid[i] === v) return;
+    game.grid[i] = v;
+    if (v !== 0 && v !== game.solution[i]) {
+      game.mistakes++;
+      note(pick(WRONG_LINES, game.mistakes + i));
+    } else {
+      note("");
+    }
+    if (isSolved()) { win(); return; }
+    renderGame();
+    persistGame();
+  }
+  function moveSel(k) {
+    if (game.sel < 0) game.sel = 0;
+    var r = Math.floor(game.sel / N), c = game.sel % N;
+    if (k === "ArrowUp") r = Math.max(0, r - 1);
+    if (k === "ArrowDown") r = Math.min(N - 1, r + 1);
+    if (k === "ArrowLeft") c = Math.max(0, c - 1);
+    if (k === "ArrowRight") c = Math.min(N - 1, c + 1);
+    game.sel = r * N + c;
+    renderGame();
+    cells[game.sel].focus();
+  }
+  function win() {
+    var lvl = game.level;
+    game.done = true;
+    stopTimer();
+    profile.cleared = Math.max(profile.cleared, lvl);
+    delete profile.progress[lvl];
+    profile.last = lvl;
+    saveProfile();
+    renderGame();
+    $("#win-title").textContent = pick(WIN_LINES, lvl);
+    $("#win-text").textContent = lvl >= TOTAL
+      ? "All 200 levels cleared. " + profile.name + " is officially a menace to bad puzzles."
+      : "Level " + lvl + " cleared in " + fmt(game.elapsed) + " with " + game.mistakes + (game.mistakes === 1 ? " mistake." : " mistakes.");
+    $("#win-sync").textContent = "";
+    var nextBtn = $("#next-btn");
+    nextBtn.hidden = lvl >= TOTAL;
+    nextBtn.dataset.level = String(lvl + 1);
+    $("#win").hidden = false;
+    queueScore();
+  }
+
+  /* ---------- input ---------- */
+  $("#board").addEventListener("click", function (e) {
+    var b = e.target.closest(".cell");
+    if (!b || !game) return;
+    game.sel = +b.dataset.i;
+    renderGame();
+  });
+  $("#pad").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-n]");
+    if (b) enter(+b.dataset.n);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (!game || game.done || $("#s-game").hidden) return;
+    var k = e.key;
+    if (/^[1-6]$/.test(k)) { enter(+k); e.preventDefault(); }
+    else if (k === "0" || k === "Backspace" || k === "Delete") { enter(0); e.preventDefault(); }
+    else if (k === "ArrowUp" || k === "ArrowDown" || k === "ArrowLeft" || k === "ArrowRight") { moveSel(k); e.preventDefault(); }
+  });
+  document.addEventListener("click", function (e) {
+    var g = e.target.closest("[data-go]");
+    if (g) goto(g.dataset.go);
+  });
+  $("#levels").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-level]");
+    if (!b) return;
+    var n = +b.dataset.level;
+    if (!profile) { goto("home"); return; }
+    if (n > profile.cleared + 1) {
+      $("#levels-note").textContent = "Level " + n + " is locked. Clear level " + (profile.cleared + 1) + " first. No shortcuts, puzzler.";
+      return;
+    }
+    openLevel(n);
+  });
+  $("#continue-btn").addEventListener("click", function () { if (profile) openLevel(resumeTarget()); });
+  $("#levels-btn").addEventListener("click", function () { goto("levels"); });
+  $("#next-btn").addEventListener("click", function () { openLevel(+this.dataset.level); });
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) persistGame();
+  });
+  $("#name-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var raw = $("#name-input").value.replace(/\s+/g, " ").trim();
+    if (!raw) { setNameMsg("Your name can't be empty. Even hamsters have names.", true); return; }
+    profile = { name: raw.slice(0, 16), cleared: 0, last: 0, progress: {} };
+    saveProfile();
+    $("#name-input").value = "";
+    setNameMsg("");
+    openLevel(1);
+  });
+  var forgetTimer = null;
+  $("#forget-btn").addEventListener("click", function () {
+    var btn = this;
+    if (btn.dataset.armed !== "1") {
+      btn.dataset.armed = "1";
+      btn.textContent = "Tap again to erase my progress";
+      clearTimeout(forgetTimer);
+      forgetTimer = setTimeout(function () {
+        btn.dataset.armed = "0";
+        btn.textContent = "Forget me on this device";
+      }, 4000);
+      return;
+    }
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    profile = null;
+    stopTimer();
+    game = null;
+    btn.dataset.armed = "0";
+    btn.textContent = "Forget me on this device";
+    renderHome();
+    setNameMsg("Fresh start. What's your name, puzzler?");
+  });
+
+  /* ---------- shared leaderboard (db capability) ---------- */
+  var dbNS = null, myId = null, unsubBoard = null, scoreChain = Promise.resolve();
+
+  function setSync(msg) {
+    $("#sync-note").textContent = msg;
+    $("#win-sync").textContent = msg;
+  }
+  function renderBoardOffline(msg) {
+    $("#board-status").textContent = msg;
+    $("#board-list").textContent = "";
+  }
+  function renderRows(docs) {
+    var list = $("#board-list");
+    list.textContent = "";
+    $("#board-status").textContent = docs.length
+      ? "Top " + docs.length + " puzzlers, ranked by the highest level cleared."
+      : "Nobody has cleared a level yet. Be the first legend.";
+    docs.forEach(function (d, idx) {
+      var data = d.data() || {};
+      var mine = !!myId && d.id === myId;
+      var name = el("span", "nm", typeof data.name === "string" && data.name ? data.name : "Mystery puzzler");
+      if (mine) name.appendChild(el("span", "you", "you"));
+      var li = el("li", "row" + (mine ? " me" : ""));
+      li.appendChild(el("span", "rank", "#" + (idx + 1)));
+      li.appendChild(name);
+      li.appendChild(el("span", "lv", "Level " + (+data.cleared || 0)));
+      list.appendChild(li);
+    });
+  }
+  function subscribeBoard() {
+    if (unsubBoard || !dbNS) return;
+    try {
+      unsubBoard = dbNS.collection("players")
+        .where("cleared", ">", 0)
+        .orderBy("cleared", "desc")
+        .limit(100)
+        .onSnapshot(
+          function (snap) { renderRows(snap.docs); },
+          function (err) {
+            renderBoardOffline(BOARD_ERR[err && err.code] || "The leaderboard is taking a nap. Try again in a bit.");
+          }
+        );
+    } catch (err) {
+      renderBoardOffline("The leaderboard could not connect. Try again later.");
+    }
+  }
+  // Each signed-in viewer writes only players/<their id>. Everyone reads the top list.
+  function postScore() {
+    if (!profile) return;
+    if (!dbNS) { setSync("Progress saved on this device. The leaderboard is not connected in this view."); return; }
+    if (!myId) { setSync("Progress saved on this device. Open this page signed in to join the leaderboard."); return; }
+    function attempt(n) {
+      var payload = { name: profile.name, cleared: profile.cleared, updatedAt: Date.now() };
+      return Promise.resolve()
+        .then(function () { return dbNS.doc("players/" + myId).set(payload); })
+        .then(function () { setSync("Leaderboard updated. Level " + payload.cleared + " is on the board."); })
+        .catch(function (err) {
+          var code = err && err.code;
+          if (code === "unavailable" && n < 2) {
+            return new Promise(function (res) { setTimeout(res, 900 + Math.random() * 600); })
+              .then(function () { return attempt(n + 1); });
+          }
+          setSync(SYNC_ERR[code] || "Couldn't reach the leaderboard. Progress is saved on this device.");
+        });
+    }
+    return attempt(1);
+  }
+  // Writes are chained so only one save is ever in flight.
+  function queueScore() {
+    scoreChain = scoreChain.then(postScore);
+  }
+
+  /* ---------- boot ---------- */
+  function useCap(name) {
+    try {
+      var c = window.claude;
+      return c && typeof c.use === "function" ? c.use(name) : null;
+    } catch (e) { return null; }
+  }
+  function boot() {
+    show("home");
+    renderHero();
+    renderHome();
+    renderBoardOffline("Connecting to the leaderboard...");
+    setSync("");
+    Promise.all([
+      Promise.resolve(useCap("db")).catch(function () { return null; }),
+      Promise.resolve(useCap("user")).catch(function () { return null; })
+    ]).then(function (res) {
+      dbNS = res[0] || null;
+      var user = res[1];
+      if (!user) return;
+      return Promise.resolve()
+        .then(function () { return user.id(); })
+        .then(function (id) { myId = typeof id === "string" && ID_RE.test(id) ? id : null; })
+        .catch(function () { myId = null; });
+    }).then(function () {
+      if (!dbNS) {
+        renderBoardOffline(BOARD_ERR.not_granted);
+        setSync("Progress saves in this browser. The leaderboard is not connected in this view.");
+        return;
+      }
+      subscribeBoard();
+      setSync(myId
+        ? "Leaderboard connected. Your best level posts when you clear one."
+        : "Progress saves in this browser. Open this page signed in to join the leaderboard.");
+    });
+  }
+  boot();
+})();
+</script>
