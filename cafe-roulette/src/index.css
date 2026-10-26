@@ -1,0 +1,53 @@
+:root {
+  --coral: #ff6f61;
+  --mint: #3ddc97;
+  --lavender: #b69cff;
+  --sky: #5ac8fa;
+  --cream: #fff1d6;
+  --yellow: #ffc93c;
+  --ink: #3b1d5c;
+  color: var(--ink);
+  font-family: "Baloo 2", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Nền pastel: xanh da trời, lavender và kem, có vệt ánh sáng ấm ở giữa. */
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(255, 241, 214, 0.9) 0%, rgba(255, 241, 214, 0) 55%),
+    linear-gradient(165deg, #bfe9ff 0%, #d9e4ff 40%, #e4d6ff 75%, #f6d7ff 100%);
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+button {
+  font-family: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

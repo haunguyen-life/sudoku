@@ -1,0 +1,64 @@
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Vật trang trí nổi: chỉ animate transform để mượt trên mobile. */
+.item {
+  position: absolute;
+  opacity: 0.85;
+  line-height: 1;
+  text-shadow: 0 4px 0 rgba(59, 29, 92, 0.18), 0 8px 10px rgba(59, 29, 92, 0.18);
+  animation: float 6s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.6;
+}
+
+.blobA {
+  width: 320px;
+  height: 320px;
+  left: -90px;
+  top: -80px;
+  background: #5ac8fa;
+}
+
+.blobB {
+  width: 360px;
+  height: 360px;
+  right: -120px;
+  bottom: -100px;
+  background: #b69cff;
+}
+
+.blobC {
+  width: 260px;
+  height: 260px;
+  right: -60px;
+  top: 30%;
+  background: #fff1d6;
+}
+
+@keyframes float {
+  from {
+    transform: translateY(0) rotate(-8deg);
+  }
+  to {
+    transform: translateY(-18px) rotate(10deg);
+  }
+}
+
+/* Trên màn hình nhỏ giảm bớt vật trang trí để đỡ rối và nhẹ máy. */
+@media (max-width: 599px) {
+  .item:nth-child(n + 7) {
+    display: none;
+  }
+}

@@ -1,0 +1,146 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 241, 214, 0.25), rgba(59, 29, 92, 0.6));
+  backdrop-filter: blur(4px);
+  perspective: 1100px;
+}
+
+.trophy {
+  transform-style: preserve-3d;
+}
+
+.float {
+  will-change: transform;
+}
+
+/* Thẻ cúp: khung vàng dày, lõi kem, bóng đổ mềm phía dưới. */
+.card {
+  position: relative;
+  overflow: hidden;
+  width: min(90vw, 420px);
+  padding: 30px 22px 24px;
+  box-sizing: border-box;
+  border-radius: 36px;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 0%, #ffffff 0%, #fff1d6 55%, #ffe2c2 100%);
+  border: 8px solid #ffc93c;
+  box-shadow:
+    inset 0 -6px 0 rgba(201, 138, 18, 0.35),
+    0 12px 0 #c98a12,
+    0 30px 50px rgba(59, 29, 92, 0.45),
+    0 0 60px rgba(255, 201, 60, 0.45);
+}
+
+/* Vệt sáng quét qua thẻ, như ánh kim loại. */
+.shine {
+  position: absolute;
+  top: -20%;
+  left: -60%;
+  width: 40%;
+  height: 140%;
+  background: linear-gradient(105deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.75) 50%, rgba(255, 255, 255, 0) 100%);
+  transform: skewX(-18deg);
+  animation: sweep 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes sweep {
+  0%,
+  60% {
+    left: -60%;
+  }
+  100% {
+    left: 120%;
+  }
+}
+
+.rays {
+  position: absolute;
+  left: 50%;
+  top: 36%;
+  width: 180%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(182, 156, 255, 0.22) 0deg 12deg,
+    rgba(255, 255, 255, 0) 12deg 24deg
+  );
+  animation: spin 16s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.heading {
+  position: relative;
+  margin: 0;
+  font: 800 clamp(20px, 5vw, 26px) / 1.2 "Baloo 2", system-ui, sans-serif;
+  color: #ff6f61;
+  text-shadow: 0 2px 0 #ffffff;
+}
+
+.icon {
+  position: relative;
+  margin: 8px 0 0;
+  font-size: clamp(56px, 16vw, 80px);
+  line-height: 1.1;
+  filter: drop-shadow(0 6px 6px rgba(59, 29, 92, 0.3));
+}
+
+.winner {
+  position: relative;
+  margin: 6px 0 22px;
+  font: 800 clamp(40px, 11vw, 62px) / 1.05 "Baloo 2", system-ui, sans-serif;
+  color: #3b1d5c;
+  text-shadow: 0 3px 0 #ffffff, 0 6px 0 #ffc93c;
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.primary,
+.ghost {
+  font: 800 18px "Baloo 2", system-ui, sans-serif;
+  padding: 14px 22px;
+  min-height: 50px;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 0;
+}
+
+.primary {
+  color: #3b1d5c;
+  background: linear-gradient(180deg, #ffe27a 0%, #ffc93c 100%);
+  box-shadow: 0 6px 0 #d99a10, 0 10px 18px rgba(59, 29, 92, 0.25);
+}
+
+.ghost {
+  color: #6b3fd1;
+  background: #ffffff;
+  box-shadow: 0 6px 0 #c9b6ff, 0 10px 18px rgba(59, 29, 92, 0.18);
+}
+
+.primary:focus-visible,
+.ghost:focus-visible {
+  outline: 3px solid #5ac8fa;
+  outline-offset: 3px;
+}

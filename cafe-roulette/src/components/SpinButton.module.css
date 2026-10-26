@@ -1,0 +1,45 @@
+/* Nút 3D to: khối vàng với lớp bóng trên, mép dày và hiệu ứng lún khi nhấn. */
+.spin {
+  position: relative;
+  font: 800 clamp(24px, 6vw, 32px) "Baloo 2", system-ui, sans-serif;
+  letter-spacing: 1px;
+  min-width: min(80vw, 300px);
+  padding: 18px 40px;
+  border: 0;
+  border-radius: 32px;
+  cursor: pointer;
+  color: #3b1d5c;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 48%),
+    linear-gradient(180deg, #ffe27a 0%, #ffc93c 100%);
+  box-shadow:
+    inset 0 -5px 0 rgba(201, 138, 18, 0.35),
+    0 10px 0 #d99a10,
+    0 18px 28px rgba(59, 29, 92, 0.32);
+  transition: box-shadow 0.12s ease, filter 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.spin:hover:not(:disabled) {
+  filter: brightness(1.05) saturate(1.08);
+}
+
+/* Nhấn xuống: khối lún vào và bóng mép co lại. */
+.spin:active:not(:disabled) {
+  transform: translateY(8px);
+  box-shadow:
+    inset 0 -2px 0 rgba(201, 138, 18, 0.35),
+    0 2px 0 #d99a10,
+    0 8px 14px rgba(59, 29, 92, 0.25);
+}
+
+.spin:focus-visible {
+  outline: 4px solid #ffffff;
+  outline-offset: 4px;
+}
+
+.spin:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+  filter: saturate(0.7);
+}
