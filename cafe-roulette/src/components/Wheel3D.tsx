@@ -1,6 +1,7 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import * as THREE from 'three';
-import { SHOPS } from '../data/shops';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { PALETTE, SHOPS } from '../data/shops';
 import { easeOutQuart, getWinnerIndexAt } from '../logic/spin';
 import { drawWheelFace } from './wheelFace';
 import styles from './Wheel3D.module.css';
@@ -15,8 +16,15 @@ interface Props {
 }
 
 const RADIUS = 1;
+const BEVEL_SIZE = 0.06;
+const BODY_DEPTH = 0.1;
+const BODY_BEVEL = 0.1;
+// Mặt vẽ nằm gọn trong phần phẳng của thân, phần viền bo bên ngoài là gờ vàng.
+const FACE_RADIUS = 0.86;
+const FRONT_Z = BODY_DEPTH + BODY_BEVEL;
 const SEGMENT_COUNT = SHOPS.length;
 const SEGMENT_ANGLE = 360 / SEGMENT_COUNT;
+const MAX_PIXEL_RATIO = 1.75;
 
 export function Wheel3D({ controller }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -26,8 +34,10 @@ export function Wheel3D({ controller }: Props) {
     if (!container) return;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
     container.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
@@ -37,18 +47,25 @@ export function Wheel3D({ controller }: Props) {
 
     const render = () => renderer.render(scene, camera);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.6);
-    keyLight.position.set(2, 4, 6);
+    // Ánh sáng studio: môi trường phản chiếu cho độ bóng, cộng đèn chính, đèn viền và đèn nền.
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmrem.dispose();
+    scene.environment = environment;
+    scene.environmentIntensity = 0.7;
+
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xffd6e8, 0.6));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+    keyLight.position.set(3, 5, 6);
     scene.add(keyLight);
-    const fillLight = new THREE.DirectionalLight(0xffd6f0, 0.6);
-    fillLight.position.set(-4, -2, 3);
-    scene.add(fillLight);
+    const rimLight = new THREE.DirectionalLight(0xc9b6ff, 0.8);
+    rimLight.position.set(-4, 2, -4);
+    scene.add(rimLight);
 
     const wheel = new THREE.Group();
     scene.add(wheel);
 
-    // Mặt vòng quay: một đĩa tròn với texture vẽ 8 ô.
+    // Mặt vòng quay: texture vẽ 8 ô, tên quán và icon.
     const faceCanvas = document.createElement('canvas');
     faceCanvas.width = 1024;
     faceCanvas.height = 1024;
@@ -68,60 +85,88 @@ export function Wheel3D({ controller }: Props) {
     // Vẽ lại sau khi font Baloo 2 tải xong để chữ đúng kiểu.
     document.fonts?.load('800 48px "Baloo 2"').then(redrawFace).catch(() => undefined);
 
-    const face = new THREE.Mesh(
-      new THREE.CircleGeometry(RADIUS, 128),
-      new THREE.MeshStandardMaterial({ map: faceTexture, roughness: 0.35, metalness: 0.05 }),
-    );
-    // Đặt mặt trước một chút so với nắp thân để tránh z-fighting.
-    face.position.z = 0.14;
-    wheel.add(face);
-
-    // Thân vòng quay có độ dày để tạo khối 3D.
-    const body = new THREE.Mesh(
-      new THREE.CylinderGeometry(RADIUS + 0.05, RADIUS + 0.05, 0.26, 128),
-      new THREE.MeshStandardMaterial({ color: 0xffc857, metalness: 0.35, roughness: 0.3 }),
-    );
-    body.rotation.x = Math.PI / 2;
+    // Thân vòng quay: đĩa dày với viền bo tròn, mạ vàng bóng.
+    const bodyShape = new THREE.Shape();
+    bodyShape.absarc(0, 0, RADIUS, 0, Math.PI * 2, false);
+    const bodyGeometry = new THREE.ExtrudeGeometry(bodyShape, {
+      depth: BODY_DEPTH,
+      bevelEnabled: true,
+      bevelThickness: BODY_BEVEL,
+      bevelSize: BEVEL_SIZE,
+      bevelOffset: 0,
+      bevelSegments: 10,
+      curveSegments: 128,
+    });
+    const goldMaterial = new THREE.MeshPhysicalMaterial({
+      color: PALETTE.yellow,
+      metalness: 0.85,
+      roughness: 0.24,
+      clearcoat: 0.8,
+      clearcoatRoughness: 0.15,
+    });
+    const body = new THREE.Mesh(bodyGeometry, goldMaterial);
+    body.position.z = -BODY_BEVEL;
     wheel.add(body);
 
-    const rim = new THREE.Mesh(
-      new THREE.TorusGeometry(RADIUS + 0.02, 0.06, 24, 160),
-      new THREE.MeshStandardMaterial({ color: 0xfff1b8, metalness: 0.4, roughness: 0.2 }),
-    );
-    rim.position.z = 0.14;
-    wheel.add(rim);
+    // Mặt vẽ đặt sát phía trước thân, bóng hơn bằng lớp clearcoat.
+    const faceMaterial = new THREE.MeshPhysicalMaterial({
+      map: faceTexture,
+      roughness: 0.3,
+      metalness: 0,
+      clearcoat: 0.6,
+      clearcoatRoughness: 0.2,
+    });
+    const face = new THREE.Mesh(new THREE.CircleGeometry(FACE_RADIUS, 128), faceMaterial);
+    face.position.z = FRONT_Z + 0.004;
+    wheel.add(face);
 
-    // Các chấm tròn trên vành, đặt đúng ở ranh giới giữa 8 ô.
-    const pegGeometry = new THREE.SphereGeometry(0.06, 16, 16);
-    const pegMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25 });
+    // Chấm bi trên vành, đặt đúng ở ranh giới giữa 8 ô.
+    const studGeometry = new THREE.SphereGeometry(0.045, 16, 16);
+    const studMaterial = new THREE.MeshPhysicalMaterial({
+      color: PALETTE.cream,
+      roughness: 0.2,
+      clearcoat: 1,
+      clearcoatRoughness: 0.1,
+    });
     for (let i = 0; i < SEGMENT_COUNT; i++) {
       const rad = THREE.MathUtils.degToRad(i * SEGMENT_ANGLE);
-      const peg = new THREE.Mesh(pegGeometry, pegMaterial);
-      peg.position.set((RADIUS + 0.02) * Math.sin(rad), (RADIUS + 0.02) * Math.cos(rad), 0.17);
-      wheel.add(peg);
+      const stud = new THREE.Mesh(studGeometry, studMaterial);
+      const ringRadius = (FACE_RADIUS + RADIUS) / 2;
+      stud.position.set(ringRadius * Math.sin(rad), ringRadius * Math.cos(rad), FRONT_Z);
+      wheel.add(stud);
     }
 
+    // Tâm vòng quay: nút bóng màu san hô.
     const hub = new THREE.Mesh(
-      new THREE.SphereGeometry(0.16, 32, 32),
-      new THREE.MeshStandardMaterial({ color: 0xff4d8d, metalness: 0.2, roughness: 0.3 }),
+      new THREE.SphereGeometry(0.17, 32, 32),
+      new THREE.MeshPhysicalMaterial({
+        color: PALETTE.coral,
+        roughness: 0.18,
+        metalness: 0.1,
+        clearcoat: 1,
+        clearcoatRoughness: 0.08,
+      }),
     );
-    hub.position.z = 0.2;
+    hub.position.z = FRONT_Z + 0.03;
     wheel.add(hub);
 
-    // Kim chỉ cố định phía trên vòng quay.
-    const pointer = new THREE.Mesh(
-      new THREE.ConeGeometry(0.15, 0.42, 40),
-      new THREE.MeshStandardMaterial({ color: 0xff3b5c, roughness: 0.3, metalness: 0.1 }),
-    );
+    // Kim chỉ cố định phía trên vòng quay, không thuộc nhóm xoay.
+    const pointerMaterial = new THREE.MeshPhysicalMaterial({
+      color: PALETTE.coral,
+      roughness: 0.2,
+      clearcoat: 1,
+      clearcoatRoughness: 0.1,
+    });
+    const pointer = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.42, 40), pointerMaterial);
     pointer.rotation.z = Math.PI;
-    pointer.position.set(0, RADIUS + 0.23, 0.2);
+    pointer.position.set(0, RADIUS + BEVEL_SIZE + 0.21, 0.2);
     scene.add(pointer);
 
     const pointerCap = new THREE.Mesh(
-      new THREE.SphereGeometry(0.06, 16, 16),
-      new THREE.MeshStandardMaterial({ color: 0xffc857, metalness: 0.5, roughness: 0.2 }),
+      new THREE.SphereGeometry(0.07, 20, 20),
+      goldMaterial,
     );
-    pointerCap.position.set(0, RADIUS + 0.44, 0.2);
+    pointerCap.position.set(0, RADIUS + BEVEL_SIZE + 0.46, 0.2);
     scene.add(pointerCap);
 
     // Góc dương = xoay theo chiều kim đồng hồ.
@@ -181,15 +226,13 @@ export function Wheel3D({ controller }: Props) {
       observer.disconnect();
       controller.current = null;
       faceTexture.dispose();
-      scene.traverse((obj) => {
-        if (obj instanceof THREE.Mesh) {
-          obj.geometry.dispose();
-          const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
-          materials.forEach((material) => material.dispose());
-        }
-      });
-      pegGeometry.dispose();
-      pegMaterial.dispose();
+      bodyGeometry.dispose();
+      goldMaterial.dispose();
+      faceMaterial.dispose();
+      studGeometry.dispose();
+      studMaterial.dispose();
+      pointerMaterial.dispose();
+      environment.dispose();
       renderer.dispose();
       renderer.domElement.remove();
     };

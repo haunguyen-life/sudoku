@@ -1,5 +1,5 @@
 import type { Shop } from '../data/shops';
-import { ICON_EMOJI } from '../data/shops';
+import { ICON_EMOJI, PALETTE } from '../data/shops';
 
 const DEG = Math.PI / 180;
 const FONT_FAMILY = '"Baloo 2", "Segoe UI", system-ui, sans-serif';
@@ -25,6 +25,7 @@ function splitName(name: string): string[] {
 
 // Vẽ toàn bộ mặt vòng quay lên canvas: các ô màu, tên quán và icon.
 // Ô đầu tiên bắt đầu từ đỉnh và đi theo chiều kim đồng hồ.
+// Texture này quay cùng vòng quay nên chữ luôn quay theo.
 export function drawWheelFace(ctx: CanvasRenderingContext2D, shops: Shop[]): void {
   const size = ctx.canvas.width;
   const c = size / 2;
@@ -33,6 +34,7 @@ export function drawWheelFace(ctx: CanvasRenderingContext2D, shops: Shop[]): voi
 
   ctx.clearRect(0, 0, size, size);
 
+  // Các ô màu, ngăn cách bằng viền kem dày.
   shops.forEach((shop, i) => {
     const a0 = toCanvasAngle(i * seg);
     const a1 = toCanvasAngle((i + 1) * seg);
@@ -42,26 +44,44 @@ export function drawWheelFace(ctx: CanvasRenderingContext2D, shops: Shop[]): voi
     ctx.closePath();
     ctx.fillStyle = shop.color;
     ctx.fill();
-    ctx.lineWidth = 10;
-    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 12;
+    ctx.strokeStyle = PALETTE.cream;
     ctx.stroke();
   });
 
-  // Ánh sáng mềm phía trên để tạo cảm giác khối 3D.
-  const sheen = ctx.createRadialGradient(c, c, r * 0.1, c, c, r);
-  sheen.addColorStop(0, 'rgba(255,255,255,0)');
-  sheen.addColorStop(0.7, 'rgba(255,255,255,0.08)');
-  sheen.addColorStop(1, 'rgba(255,255,255,0.28)');
+  // Ánh sáng mềm từ trên xuống để mặt vòng quay có độ bóng.
+  const sheen = ctx.createLinearGradient(c, c - r, c, c + r);
+  sheen.addColorStop(0, 'rgba(255,255,255,0.28)');
+  sheen.addColorStop(0.5, 'rgba(255,255,255,0)');
+  sheen.addColorStop(1, 'rgba(59,29,92,0.12)');
   ctx.beginPath();
   ctx.arc(c, c, r, 0, Math.PI * 2);
   ctx.fillStyle = sheen;
+  ctx.fill();
+
+  // Ambient occlusion giả: tối dần ở mép và quanh trục giữa.
+  const edgeAO = ctx.createRadialGradient(c, c, r * 0.8, c, c, r);
+  edgeAO.addColorStop(0, 'rgba(59,29,92,0)');
+  edgeAO.addColorStop(1, 'rgba(59,29,92,0.28)');
+  ctx.beginPath();
+  ctx.arc(c, c, r, 0, Math.PI * 2);
+  ctx.fillStyle = edgeAO;
+  ctx.fill();
+
+  const hubAO = ctx.createRadialGradient(c, c, 0, c, c, r * 0.22);
+  hubAO.addColorStop(0, 'rgba(59,29,92,0.35)');
+  hubAO.addColorStop(1, 'rgba(59,29,92,0)');
+  ctx.beginPath();
+  ctx.arc(c, c, r * 0.22, 0, Math.PI * 2);
+  ctx.fillStyle = hubAO;
   ctx.fill();
 
   shops.forEach((shop, i) => {
     const mid = (i + 0.5) * seg;
     const rad = mid * DEG;
 
-    // Tên quán: chạy theo phương bán kính, tự thu nhỏ cỡ chữ nếu quá dài.
+    // Tên quán: chữ đậm màu ink với viền trắng, đọc được trên mọi màu ô.
+    // Chạy theo phương bán kính, tự thu nhỏ cỡ chữ nếu quá dài.
     const lines = splitName(shop.name);
     const maxWidth = r * 0.4;
     let fontSize = 46;
@@ -80,9 +100,9 @@ export function drawWheelFace(ctx: CanvasRenderingContext2D, shops: Shop[]): voi
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.lineJoin = 'round';
-    ctx.lineWidth = fontSize * 0.2;
-    ctx.strokeStyle = 'rgba(59, 29, 92, 0.45)';
-    ctx.fillStyle = '#ffffff';
+    ctx.lineWidth = fontSize * 0.26;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.fillStyle = PALETTE.ink;
     lines.forEach((line, j) => {
       const y = (j - (lines.length - 1) / 2) * fontSize * 1.05;
       ctx.strokeText(line, 0, y);
@@ -97,7 +117,7 @@ export function drawWheelFace(ctx: CanvasRenderingContext2D, shops: Shop[]): voi
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.shadowColor = 'rgba(59, 29, 92, 0.35)';
-    ctx.shadowBlur = 12;
+    ctx.shadowBlur = 10;
     ctx.shadowOffsetY = 4;
     ctx.fillText(ICON_EMOJI[shop.icon], 0, 0);
     ctx.restore();

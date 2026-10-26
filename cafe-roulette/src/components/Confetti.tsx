@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
+import { PALETTE } from '../data/shops';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import styles from './Confetti.module.css';
 
-const COLORS = ['#FF6FA5', '#4CC9F0', '#9D6BFF', '#FFD166', '#2EC4A6', '#FF9F43', '#ffffff'];
-const PIECE_COUNT = 160;
+const COLORS = [PALETTE.coral, PALETTE.mint, PALETTE.lavender, PALETTE.yellow, PALETTE.sky, PALETTE.cream];
 const MAX_DURATION_MS = 6000;
 
 interface Piece {
@@ -19,6 +19,11 @@ interface Piece {
   round: boolean;
 }
 
+// Số mảnh confetti giảm trên màn hình nhỏ để giữ mượt.
+function pieceCount(): number {
+  return window.innerWidth < 600 ? 90 : 150;
+}
+
 // Confetti 2D trên canvas: nhẹ, không làm giật khi quay.
 export function Confetti() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -30,7 +35,7 @@ export function Confetti() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
     const resize = () => {
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
@@ -41,7 +46,7 @@ export function Confetti() {
 
     const originX = window.innerWidth / 2;
     const originY = window.innerHeight * 0.35;
-    const pieces: Piece[] = Array.from({ length: PIECE_COUNT }, () => ({
+    const pieces: Piece[] = Array.from({ length: pieceCount() }, () => ({
       x: originX + (Math.random() - 0.5) * 120,
       y: originY,
       vx: (Math.random() - 0.5) * 14,
