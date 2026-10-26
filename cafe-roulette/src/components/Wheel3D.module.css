@@ -1,0 +1,10 @@
+.root {
+  position: absolute;
+  inset: 0;
+}
+
+.root canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

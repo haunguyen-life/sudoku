@@ -1,0 +1,34 @@
+.spin {
+  font: 800 clamp(24px, 6vw, 32px) "Baloo 2", system-ui, sans-serif;
+  letter-spacing: 1px;
+  min-width: min(80vw, 300px);
+  padding: 18px 40px;
+  border: 0;
+  border-radius: 30px;
+  cursor: pointer;
+  color: #3b1d5c;
+  background: linear-gradient(180deg, #ffe066 0%, #ff9f1c 100%);
+  box-shadow: 0 9px 0 #d9730d, 0 16px 28px rgba(59, 29, 92, 0.35);
+  transition: box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.spin:hover:not(:disabled) {
+  filter: brightness(1.06);
+  box-shadow: 0 9px 0 #d9730d, 0 20px 34px rgba(59, 29, 92, 0.45);
+}
+
+.spin:active:not(:disabled) {
+  box-shadow: 0 2px 0 #d9730d, 0 6px 12px rgba(59, 29, 92, 0.3);
+  transform: translateY(6px);
+}
+
+.spin:focus-visible {
+  outline: 4px solid #ffffff;
+  outline-offset: 4px;
+}
+
+.spin:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+  filter: saturate(0.6);
+}

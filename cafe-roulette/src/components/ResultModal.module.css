@@ -1,0 +1,100 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  background: rgba(59, 29, 92, 0.55);
+  backdrop-filter: blur(4px);
+  perspective: 1000px;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  width: min(92vw, 440px);
+  padding: 32px 22px 26px;
+  box-sizing: border-box;
+  border-radius: 32px;
+  text-align: center;
+  background: radial-gradient(circle at 50% 0%, #ffffff 0%, #ffe3f1 60%, #e6d6ff 100%);
+  box-shadow: 0 10px 0 #b08cff, 0 24px 48px rgba(59, 29, 92, 0.45);
+}
+
+.rays {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 160%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 209, 102, 0.35) 0deg 12deg,
+    rgba(255, 255, 255, 0) 12deg 24deg
+  );
+  animation: spin 14s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.heading {
+  position: relative;
+  margin: 0;
+  font: 800 clamp(20px, 5vw, 26px) / 1.2 "Baloo 2", system-ui, sans-serif;
+  color: #ff4d8d;
+}
+
+.icon {
+  position: relative;
+  margin: 8px 0 0;
+  font-size: clamp(56px, 16vw, 80px);
+  line-height: 1.1;
+}
+
+.winner {
+  position: relative;
+  margin: 6px 0 22px;
+  font: 800 clamp(40px, 11vw, 64px) / 1.05 "Baloo 2", system-ui, sans-serif;
+  color: #3b1d5c;
+  text-shadow: 0 3px 0 #ffffff, 0 6px 0 #ff9fc8;
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.primary,
+.ghost {
+  font: 800 18px "Baloo 2", system-ui, sans-serif;
+  padding: 14px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 0;
+  min-height: 48px;
+}
+
+.primary {
+  background: linear-gradient(180deg, #ffe066, #ff9f1c);
+  color: #3b1d5c;
+  box-shadow: 0 6px 0 #d9730d;
+}
+
+.ghost {
+  background: #ffffff;
+  color: #6b3fd1;
+  box-shadow: 0 6px 0 #c9b6ff;
+}

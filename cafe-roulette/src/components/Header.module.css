@@ -1,0 +1,31 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  max-width: 720px;
+}
+
+.tag {
+  font: 700 13px "Baloo 2", system-ui, sans-serif;
+  letter-spacing: 1px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: #6b3fd1;
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 3px 0 #c9b6ff;
+}
+
+.title {
+  margin: 4px 0 0;
+  font: 800 clamp(28px, 7vw, 54px) / 1.05 "Baloo 2", system-ui, sans-serif;
+  color: #ffffff;
+  text-shadow: 0 3px 0 #ff77b5, 0 6px 0 #7b5cff, 0 12px 22px rgba(59, 29, 92, 0.35);
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  font: 600 clamp(16px, 4vw, 20px) "Baloo 2", system-ui, sans-serif;
+  color: #3b1d5c;
+}
